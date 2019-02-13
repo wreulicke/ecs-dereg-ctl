@@ -16,6 +16,8 @@ import (
 	"gopkg.in/urfave/cli.v1"
 )
 
+var version string
+
 func ContainsTarget(instances []string, instance string) bool {
 	for _, v := range instances {
 		if v == instance {
@@ -67,6 +69,7 @@ func main() {
 		log.Fatal(err)
 	}
 	app := cli.NewApp()
+	app.Version = version
 	app.Flags = []cli.Flag{
 		cli.StringSliceFlag{
 			Name:  "instances, i",
