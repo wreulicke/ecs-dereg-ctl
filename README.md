@@ -1,7 +1,7 @@
 
 # ecs-dereg-ctl
 
-ecs-dereg-ctl Provides graceful shutdown for Amazon ECS cluster instance.
+ecs-dereg-ctl provides graceful shutdown for Amazon ECS cluster instance.
 
 ## Usage
 
