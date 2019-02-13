@@ -2,6 +2,7 @@ project_name: ecs-dereg-ctl
 
 builds:
   - env:
+    - GO111MODULE=on
     - CGO_ENABLED=0
   - binary: ecs-dereg-ctl
     goos:
