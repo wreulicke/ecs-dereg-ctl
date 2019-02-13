@@ -6,7 +6,7 @@ jobs:
     steps:
       - checkout
       - run: go get
-      - run: curl -sL https://git.io/goreleaser | bash
+      - run: make setup build-all release
 workflows:
   version: 2
   release:
