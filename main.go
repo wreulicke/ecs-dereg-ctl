@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/pkg/errors"
 	"github.com/wreulicke/ecs-dereg-ctl/internal"
-	"gopkg.in/urfave/cli.v1"
+	cli "gopkg.in/urfave/cli.v1"
 )
 
 var version string
