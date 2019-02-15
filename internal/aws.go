@@ -32,9 +32,9 @@ func NewClientWithInterface(ecs ecsiface.ECSAPI, elbv2 elbv2iface.ELBV2API, ec2 
 	}
 }
 
-func (c *Client) ListAllContainerInstances(ctx context.Context, i *ecs.ListContainerInstancesInput) ([]*string, error) {
+func (c *Client) ListAllContainerInstances(i *ecs.ListContainerInstancesInput) ([]*string, error) {
 	var containerInstances []*string
-	err := c.ECSAPI.ListContainerInstancesPagesWithContext(ctx, i, func(loi *ecs.ListContainerInstancesOutput, b bool) bool {
+	err := c.ECSAPI.ListContainerInstancesPages(i, func(loi *ecs.ListContainerInstancesOutput, b bool) bool {
 		containerInstances = append(containerInstances, loi.ContainerInstanceArns...)
 		return b
 	})
@@ -44,14 +44,14 @@ func (c *Client) ListAllContainerInstances(ctx context.Context, i *ecs.ListConta
 	return containerInstances, nil
 }
 
-func (c *Client) DescribeAllContainerInstances(ctx context.Context, cluster *string) ([]*ecs.ContainerInstance, error) {
-	containerInstances, err := c.ListAllContainerInstances(ctx, &ecs.ListContainerInstancesInput{
+func (c *Client) DescribeAllContainerInstances(cluster *string) ([]*ecs.ContainerInstance, error) {
+	containerInstances, err := c.ListAllContainerInstances(&ecs.ListContainerInstancesInput{
 		Cluster: cluster,
 	})
 	if err != nil {
 		return nil, err
 	}
-	o, err := c.DescribeContainerInstancesWithContext(ctx, &ecs.DescribeContainerInstancesInput{
+	o, err := c.DescribeContainerInstances(&ecs.DescribeContainerInstancesInput{
 		Cluster:            cluster,
 		ContainerInstances: containerInstances,
 	})
@@ -69,7 +69,7 @@ func (c *Client) DescribeAllContainerInstances(ctx context.Context, cluster *str
 
 func (c *Client) DescribeTargetGroupArns(ctx context.Context, targetGroups []*string) ([]*string, error) {
 	var targetGroupArns []*string
-	c.ELBV2API.DescribeTargetGroupsPagesWithContext(ctx, &elbv2.DescribeTargetGroupsInput{
+	c.DescribeTargetGroupsPages(&elbv2.DescribeTargetGroupsInput{
 		Names: targetGroups,
 	}, func(o *elbv2.DescribeTargetGroupsOutput, b bool) bool {
 		for _, v := range o.TargetGroups {
@@ -82,9 +82,9 @@ func (c *Client) DescribeTargetGroupArns(ctx context.Context, targetGroups []*st
 	return targetGroupArns, nil
 }
 
-func (c *Client) DescribeAllInstancesInTargetGroups(ctx context.Context, targetGroupArns []*string) (ds []*elbv2.TargetHealthDescription, err error) {
+func (c *Client) DescribeAllInstancesInTargetGroups(targetGroupArns []*string) (ds []*elbv2.TargetHealthDescription, err error) {
 	for _, arn := range targetGroupArns {
-		o, err := c.ELBV2API.DescribeTargetHealthWithContext(ctx, &elbv2.DescribeTargetHealthInput{
+		o, err := c.DescribeTargetHealth(&elbv2.DescribeTargetHealthInput{
 			TargetGroupArn: arn,
 		})
 		if err != nil {
@@ -95,8 +95,8 @@ func (c *Client) DescribeAllInstancesInTargetGroups(ctx context.Context, targetG
 	return
 }
 
-func (c *Client) ListAllServicesInCluster(ctx context.Context, cluster *string) (services []*string, err error) {
-	err = c.ListServicesPagesWithContext(ctx, &ecs.ListServicesInput{
+func (c *Client) ListAllServicesInCluster(cluster *string) (services []*string, err error) {
+	err = c.ListServicesPages(&ecs.ListServicesInput{
 		Cluster: cluster,
 	}, func(o *ecs.ListServicesOutput, b bool) bool {
 		services = append(services, o.ServiceArns...)
@@ -105,12 +105,12 @@ func (c *Client) ListAllServicesInCluster(ctx context.Context, cluster *string) 
 	return
 }
 
-func (c *Client) GetAllTargetGroupsInCluster(ctx context.Context, cluster *string) ([]*string, error) {
-	arns, err := c.ListAllServicesInCluster(ctx, cluster)
+func (c *Client) GetAllTargetGroupsInCluster(cluster *string) ([]*string, error) {
+	arns, err := c.ListAllServicesInCluster(cluster)
 	if err != nil {
 		return nil, err
 	}
-	services, err := c.DescribeServicesWithContext(ctx, &ecs.DescribeServicesInput{
+	services, err := c.DescribeServices(&ecs.DescribeServicesInput{
 		Cluster:  cluster,
 		Services: arns,
 	})

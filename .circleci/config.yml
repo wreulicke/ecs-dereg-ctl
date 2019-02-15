@@ -1,5 +1,12 @@
 version: 2
 jobs:
+  build:
+    docker:
+        - image: circleci/golang:1.11
+    steps:
+      - checkout
+      - run: go get
+      - run: make setup build-all
   release:
     docker:
       - image: circleci/golang:1.11
@@ -9,6 +16,9 @@ jobs:
       - run: make setup build-all release
 workflows:
   version: 2
+  build:
+    jobs:
+      - build
   release:
     jobs:
       - release:

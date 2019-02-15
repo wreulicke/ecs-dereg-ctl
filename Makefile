@@ -11,7 +11,7 @@ build:
 	go build -ldflags "-X $(VERSION_FLAG)" -o ./dist/ecs-dereg-ctl .
 
 build-all: 
-	GO111MODULE=on gox -os="$(OS)" -arch="$(ARCH)" -ldflags "-X $(VERSION_FLAG)" -output "./dist/{{.Dir}}_{{.OS}}_{{.Arch}}"
+	GO111MODULE=on gox -os="$(OS)" -arch="$(ARCH)" -ldflags "-X $(VERSION_FLAG)" -output "./dist/{{.Dir}}_{{.OS}}_{{.Arch}}" ./cmd/ecs-dereg-ctl
 	
 release: 
 	GO111MODULE=off go get github.com/tcnksm/ghr
