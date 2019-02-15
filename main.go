@@ -166,8 +166,8 @@ func main() {
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
-	doneCh := make(chan struct{}, 1)
-	errCh := make(chan error, 1)
+	doneCh := make(chan struct{})
+	errCh := make(chan error)
 
 	go func() {
 		err := app.Run(os.Args)
@@ -175,7 +175,7 @@ func main() {
 			errCh <- err
 			return
 		}
-		doneCh <- struct{}{}
+		close(doneCh)
 	}()
 	select {
 	case <-c:
