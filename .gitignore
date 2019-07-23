@@ -25,3 +25,5 @@
 # Ignore 
 go.sum
 dist/
+.idea/
+*.iml
