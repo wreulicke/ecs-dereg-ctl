@@ -6,7 +6,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/urfave/cli"
-	ctl "github.com/wreulicke/ecs-dereg-ctl"
 	"github.com/wreulicke/ecs-dereg-ctl/internal"
 )
 
@@ -67,5 +66,5 @@ func action(c *cli.Context) error {
 	}
 
 	client := internal.NewClient(sess)
-	return ctl.GracefulShutdown(client, c.String("cluster"), c.StringSlice("instances"))
+	return internal.GracefulShutdown(client, c.String("cluster"), c.StringSlice("instances"))
 }

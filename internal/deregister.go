@@ -1,6 +1,7 @@
-package dereg
+package internal
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/pkg/errors"
-	"github.com/wreulicke/ecs-dereg-ctl/internal"
 )
 
 func containsTarget(instances []string, instance string) bool {
@@ -20,7 +20,7 @@ func containsTarget(instances []string, instance string) bool {
 	return false
 }
 
-func waitForDeregister(client *internal.Client, instances []string, targetGroups []*string) error {
+func waitForDeregister(client *Client, instances []string, targetGroups []*string) error {
 	t := time.NewTicker(500 * time.Millisecond)
 	defer t.Stop()
 loop:
@@ -52,10 +52,12 @@ loop:
 	return nil
 }
 
-func GracefulShutdown(client *internal.Client, cluster string, instances []string) error {
+func GracefulShutdown(client *Client, cluster string, instances []string) error {
 	targetGroupArns, err := client.GetAllTargetGroupsInCluster(aws.String(cluster))
 	if err != nil {
 		return err
+	} else if len(targetGroupArns) == 0 {
+		return fmt.Errorf("target group is not found. %v", targetGroupArns)
 	}
 
 	containerInstances, err := client.DescribeAllContainerInstances(aws.String(cluster))
@@ -66,6 +68,7 @@ func GracefulShutdown(client *internal.Client, cluster string, instances []strin
 	var drainingInstances []*ecs.ContainerInstance
 	for _, ci := range containerInstances {
 		if containsTarget(instances, *ci.Ec2InstanceId) {
+			log.Printf("found instances. %s", *ci.Ec2InstanceId)
 			drainingInstances = append(drainingInstances, ci)
 		}
 	}
@@ -91,10 +94,10 @@ func GracefulShutdown(client *internal.Client, cluster string, instances []strin
 			ContainerInstances: []*string{arn},
 		})
 		if err != nil {
-			return errors.Wrap(err, "Cannot descrobe container instances")
+			return errors.Wrap(err, "Cannot describe container instances")
 		}
 		if len(o.Failures) != 0 {
-			return errors.Errorf("Cannot descrobe container instances. failures: %v", o.Failures)
+			return errors.Errorf("Cannot describe container instances. failures: %v", o.Failures)
 		}
 		if *o.ContainerInstances[0].RunningTasksCount != 0 {
 			log.Println("Found running tasks. wait for draining")

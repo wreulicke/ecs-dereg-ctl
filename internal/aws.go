@@ -84,6 +84,7 @@ func (c *Client) DescribeTargetGroupArns(ctx context.Context, targetGroups []*st
 
 func (c *Client) DescribeAllInstancesInTargetGroups(targetGroupArns []*string) (ds []*elbv2.TargetHealthDescription, err error) {
 	for _, arn := range targetGroupArns {
+		log.Printf("describe arn. %s", *arn)
 		o, err := c.DescribeTargetHealth(&elbv2.DescribeTargetHealthInput{
 			TargetGroupArn: arn,
 		})
